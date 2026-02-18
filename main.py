@@ -25,7 +25,6 @@ def register_app() -> FastAPI:
         redoc_url=None,
         openapi_url="/api/openapi.json",
     )
-    app.include_router(api.router, prefix="/api")
 
     app.add_middleware(
         CORSMiddleware,
@@ -34,6 +33,7 @@ def register_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.include_router(api.router, prefix="/api")
 
     return app
 
