@@ -42,7 +42,6 @@
     gap: 24px;
   }
 
-  /* Header */
   .page-header {
     display: flex;
     align-items: center;
@@ -62,7 +61,6 @@
   .page-header h1 { font-size: 20px; font-weight: 700; }
   .page-header p  { font-size: 13px; color: var(--gray); margin-top: 2px; }
 
-  /* Card */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -79,27 +77,13 @@
     margin-bottom: 18px;
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
   .grid.cols-1 { grid-template-columns: 1fr; }
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
 
-  label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--gray);
-    letter-spacing: 0.2px;
-  }
+  label { font-size: 12px; font-weight: 500; color: var(--gray); letter-spacing: 0.2px; }
 
   input {
     background: var(--surface2);
@@ -115,21 +99,11 @@
   }
 
   input::placeholder { color: rgba(255,255,255,0.2); }
-
-  input:focus {
-    border-color: var(--purple);
-    box-shadow: 0 0 0 3px rgba(139,127,232,0.15);
-  }
-
+  input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,127,232,0.15); }
   input.error { border-color: var(--red); }
   .field-error { font-size: 11px; color: var(--red); min-height: 16px; }
 
-  /* Logo upload */
-  .logo-upload {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .logo-upload { display: flex; align-items: center; gap: 12px; }
 
   .logo-preview {
     width: 48px; height: 48px;
@@ -143,11 +117,7 @@
     font-size: 20px;
   }
 
-  .logo-preview img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
+  .logo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
   .logo-btn {
     flex: 1;
@@ -162,14 +132,9 @@
     transition: background .15s, border-color .15s;
   }
 
-  .logo-btn:hover {
-    background: var(--purple-dim);
-    border-color: var(--purple);
-  }
-
+  .logo-btn:hover { background: var(--purple-dim); border-color: var(--purple); }
   #logoInput { display: none; }
 
-  /* Submit */
   .btn-submit {
     width: 100%;
     padding: 15px;
@@ -188,7 +153,6 @@
   .btn-submit:active { transform: scale(.98); }
   .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
 
-  /* Spinner */
   .spinner {
     width: 18px; height: 18px;
     border: 2px solid rgba(255,255,255,0.3);
@@ -200,7 +164,38 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Result */
+  /* Status bar */
+  .status-bar {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-bar.visible { display: flex; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--purple);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .status-dot.done { background: var(--green); animation: none; }
+  .status-dot.error { background: var(--red); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .status-text { font-size: 13px; color: var(--gray); }
+  .status-task { font-size: 11px; color: rgba(255,255,255,0.2); margin-top: 2px; font-family: monospace; }
+
   #result {
     display: none;
     background: var(--surface);
@@ -221,10 +216,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   }
 
-  .result-actions {
-    display: flex;
-    gap: 10px;
-  }
+  .result-actions { display: flex; gap: 10px; }
 
   .btn-secondary {
     padding: 10px 20px;
@@ -241,7 +233,6 @@
 
   .btn-secondary:hover { background: #2a2a32; }
 
-  /* Alert */
   .alert {
     display: none;
     padding: 12px 16px;
@@ -262,7 +253,6 @@
 <body>
 <div class="wrapper">
 
-  <!-- Header -->
   <div class="page-header">
     <div class="logo">👻</div>
     <div>
@@ -271,7 +261,6 @@
     </div>
   </div>
 
-  <!-- Notification block -->
   <div class="card">
     <div class="card-title">📣 Notification</div>
     <div class="grid cols-3">
@@ -300,7 +289,6 @@
     </div>
   </div>
 
-  <!-- Token block -->
   <div class="card">
     <div class="card-title">🪙 Token</div>
     <div class="grid">
@@ -330,8 +318,6 @@
         <span class="field-error" id="err-token_change"></span>
       </div>
     </div>
-
-    <!-- Logo upload -->
     <div style="margin-top:18px">
       <label style="display:block; margin-bottom:10px">Token Logo</label>
       <div class="logo-upload">
@@ -344,7 +330,6 @@
     </div>
   </div>
 
-  <!-- Solana block -->
   <div class="card">
     <div class="card-title">◎ Solana</div>
     <div class="grid cols-3">
@@ -366,7 +351,6 @@
     </div>
   </div>
 
-  <!-- USDT block -->
   <div class="card">
     <div class="card-title">💵 USDT</div>
     <div class="grid">
@@ -383,7 +367,6 @@
     </div>
   </div>
 
-  <!-- Time block -->
   <div class="card">
     <div class="card-title">🕐 Display Time</div>
     <div class="field">
@@ -393,44 +376,49 @@
     </div>
   </div>
 
-  <!-- Error alert -->
   <div class="alert error" id="alertBox"></div>
 
-  <!-- Submit -->
   <button class="btn-submit" id="btnSubmit" onclick="generate()">
     <div class="spinner" id="spinner"></div>
     <span id="btnLabel">Generate Screenshot</span>
   </button>
 
-  <!-- Result -->
+  <!-- Status bar (polling) -->
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot" id="statusDot"></div>
+    <div>
+      <div class="status-text" id="statusText">Generating screenshot...</div>
+      <div class="status-task" id="statusTask"></div>
+    </div>
+  </div>
+
   <div id="result">
     <div class="card-title" style="width:100%">✅ Result</div>
     <img id="resultImg" src="" alt="Screenshot"/>
     <div class="result-actions">
       <a class="btn-secondary" id="downloadBtn" download="phantom.jpg">⬇ Download</a>
-      <button class="btn-secondary" onclick="document.getElementById('result').classList.remove('visible')">✕ Close</button>
+      <button class="btn-secondary" onclick="closeResult()">✕ Close</button>
     </div>
   </div>
 
 </div>
 
 <script>
-  // Auto-fill current time
   const now = new Date();
   document.getElementById('current_time').value =
     String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
 
   let logoDataUri = null;
+  let pollingTimer = null;
 
-  // Logo preview
   document.getElementById('logoInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
       logoDataUri = ev.target.result;
-      const preview = document.getElementById('logoPreview');
-      preview.innerHTML = `<img src="${logoDataUri}" alt="logo"/>`;
+      document.getElementById('logoPreview').innerHTML =
+        `<img src="${logoDataUri}" alt="logo"/>`;
     };
     reader.readAsDataURL(file);
   });
@@ -444,28 +432,124 @@
 
   function clearErrors() {
     required.forEach(id => {
-      const el = document.getElementById(id);
+      const el  = document.getElementById(id);
       const err = document.getElementById('err-' + id);
-      if (el) el.classList.remove('error');
+      if (el)  el.classList.remove('error');
       if (err) err.textContent = '';
     });
-    const alert = document.getElementById('alertBox');
-    alert.textContent = '';
-    alert.classList.remove('visible');
+    document.getElementById('alertBox').textContent = '';
+    document.getElementById('alertBox').classList.remove('visible');
   }
 
   function setLoading(state) {
     document.getElementById('btnSubmit').disabled = state;
     document.getElementById('spinner').style.display = state ? 'block' : 'none';
-    document.getElementById('btnLabel').textContent = state ? 'Generating...' : 'Generate Screenshot';
+    document.getElementById('btnLabel').textContent  = state ? 'Sending...' : 'Generate Screenshot';
+  }
+
+  function setStatus(text, state = 'pending', taskId = '') {
+    const dot = document.getElementById('statusDot');
+    document.getElementById('statusText').textContent = text;
+    document.getElementById('statusTask').textContent = taskId ? `task_id: ${taskId}` : '';
+    dot.className = 'status-dot' + (state !== 'pending' ? ` ${state}` : '');
+    document.getElementById('statusBar').classList.add('visible');
+  }
+
+  function hideStatus() {
+    document.getElementById('statusBar').classList.remove('visible');
+  }
+
+  function closeResult() {
+    document.getElementById('result').classList.remove('visible');
+    hideStatus();
+  }
+
+  function stopPolling() {
+    if (pollingTimer) {
+      clearTimeout(pollingTimer);
+      pollingTimer = null;
+    }
+  }
+
+  function pollResult(taskId) {
+    const INTERVAL_MS  = 1500;
+    const MAX_ATTEMPTS = 40;   // ~60 сек максимум
+    let attempts = 0;
+
+    stopPolling();
+
+    async function tick() {
+      attempts++;
+
+      if (attempts > MAX_ATTEMPTS) {
+        setStatus('Timeout: screenshot took too long', 'error', taskId);
+        return;
+      }
+
+      try {
+        const resp = await fetch(
+          `/api/v1/screenshots/result?task_id=${encodeURIComponent(taskId)}`
+        );
+
+        // Явно "ещё не готово"
+        if (resp.status === 202 || resp.status === 404) {
+          setStatus(`Generating... (${attempts})`, 'pending', taskId);
+          pollingTimer = setTimeout(tick, INTERVAL_MS);
+          return;
+        }
+
+        // Ошибка сервера
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          setStatus(`Error: ${err.detail || resp.statusText}`, 'error', taskId);
+          return;
+        }
+
+        // 200 — смотрим что внутри
+        const contentType = resp.headers.get('content-type') || '';
+
+        if (contentType.includes('image')) {
+          // Готово — отдали JPEG сразу
+          const blob = await resp.blob();
+          const url  = URL.createObjectURL(blob);
+          document.getElementById('resultImg').src = url;
+          document.getElementById('downloadBtn').href = url;
+          document.getElementById('result').classList.add('visible');
+          document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+          setStatus('Screenshot ready!', 'done', taskId);
+          return;
+        }
+
+        // JSON — читаем тело
+        const data = await resp.json().catch(() => null);
+
+        if (data === null) {
+          // API вернул null — результат ещё не готов
+          setStatus(`Generating... (${attempts})`, 'pending', taskId);
+          pollingTimer = setTimeout(tick, INTERVAL_MS);
+          return;
+        }
+
+        // Неожиданный не-null JSON
+        setStatus(`Unexpected response: ${JSON.stringify(data)}`, 'error', taskId);
+
+      } catch (e) {
+        setStatus(`Network error: ${e.message}`, 'error', taskId);
+      }
+    }
+
+    // Первый тик через INTERVAL_MS
+    pollingTimer = setTimeout(tick, INTERVAL_MS);
   }
 
   async function generate() {
     clearErrors();
+    stopPolling();
+    hideStatus();
+    document.getElementById('result').classList.remove('visible');
 
     const get = (id) => document.getElementById(id).value.trim();
 
-    // Validate required
     let hasError = false;
     required.forEach(id => {
       if (get(id) === '') {
@@ -477,35 +561,35 @@
     if (hasError) return;
 
     const payload = {
-      domain: get('domain'),
-      name: get('name'),
-      amount: get('amount'),
-      multiplier: get('multiplier'),
-      token_name: get('token_name'),
-      token_ticker: get('token_ticker'),
-      token_amount: get('token_amount'),
-      token_amount_usd: get('token_amount_usd'),
-      token_change: parseFloat(get('token_change')),
-      token_logo: logoDataUri || null,
-      solana_amount: parseFloat(get('solana_amount')),
-      solana_amount_usdt: parseFloat(get('solana_amount_usdt')),
+      domain:               get('domain'),
+      name:                 get('name'),
+      amount:               get('amount'),
+      multiplier:           get('multiplier'),
+      token_name:           get('token_name'),
+      token_ticker:         get('token_ticker'),
+      token_amount:         get('token_amount'),
+      token_amount_usd:     get('token_amount_usd'),
+      token_change:         parseFloat(get('token_change')),
+      token_logo:           logoDataUri || null,
+      solana_amount:        parseFloat(get('solana_amount')),
+      solana_amount_usdt:   parseFloat(get('solana_amount_usdt')),
       solana_amount_change: parseFloat(get('solana_amount_change')),
-      usdt_amount: parseFloat(get('usdt_amount')),
-      usdt_amount_change: parseFloat(get('usdt_amount_change')),
-      current_time: get('current_time'),
+      usdt_amount:          parseFloat(get('usdt_amount')),
+      usdt_amount_change:   parseFloat(get('usdt_amount_change')),
+      current_time:         get('current_time'),
     };
 
     setLoading(true);
 
     try {
       const resp = await fetch('/api/v1/screenshots/phantom', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body:    JSON.stringify(payload),
       });
 
       if (!resp.ok) {
-        const err = await resp.json();
+        const err    = await resp.json();
         const detail = err.detail;
         if (Array.isArray(detail)) {
           detail.forEach(e => {
@@ -523,13 +607,12 @@
         return;
       }
 
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const img = document.getElementById('resultImg');
-      img.src = url;
-      document.getElementById('downloadBtn').href = url;
-      document.getElementById('result').classList.add('visible');
-      document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+      // { status: "pending", task_id: "uuid..." }
+      const data   = await resp.json();
+      const taskId = data.task_id;
+
+      setStatus('Task created, waiting for result...', 'pending', taskId);
+      pollResult(taskId);
 
     } catch (e) {
       const alertBox = document.getElementById('alertBox');
