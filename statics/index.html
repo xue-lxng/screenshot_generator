@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Screenshot Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e10;
+    --surface: #1a1a1f;
+    --surface2: #222228;
+    --border: rgba(255,255,255,0.07);
+    --purple: #8b7fe8;
+    --purple-dim: rgba(139,127,232,0.15);
+    --white: #ffffff;
+    --gray: rgba(255,255,255,0.42);
+    --radius: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 780px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .header-logo {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #8b7fe8, #5b50c4);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    box-shadow: 0 8px 32px rgba(139,127,232,0.3);
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+    color: var(--gray);
+    max-width: 420px;
+    line-height: 1.6;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--gray);
+    padding-left: 4px;
+  }
+
+  /* Generator grid */
+  .generators {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .gen-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gen-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139,127,232,0.06), transparent 60%);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  .gen-card:hover {
+    border-color: rgba(139,127,232,0.45);
+    background: #1e1e25;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .gen-card:hover::before { opacity: 1; }
+
+  .gen-card:active { transform: translateY(0); }
+
+  .card-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  .card-icon.purple {
+    background: linear-gradient(135deg, #8b7fe8, #5b50c4);
+    box-shadow: 0 4px 16px rgba(139,127,232,0.3);
+  }
+
+  .card-body { display: flex; flex-direction: column; gap: 5px; }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .card-tag.active {
+    background: rgba(76,217,100,0.12);
+    color: #4cd964;
+    border: 1px solid rgba(76,217,100,0.2);
+  }
+
+  .card-tag.soon {
+    background: rgba(255,255,255,0.06);
+    color: var(--gray);
+    border: 1px solid var(--border);
+  }
+
+  .card-arrow {
+    position: absolute;
+    top: 22px; right: 22px;
+    font-size: 18px;
+    color: var(--purple);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity .2s, transform .2s;
+  }
+
+  .gen-card:hover .card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Soon card */
+  .gen-card.disabled {
+    cursor: default;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  /* Footer */
+  .page-footer {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 480px) {
+    .generators { grid-template-columns: 1fr; }
+    .page-header h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-logo">👻</div>
+    <h1>Screenshot Generator</h1>
+    <p>Choose a template to generate a screenshot. Fill in the data and get a ready JPEG.</p>
+  </div>
+
+  <!-- Generators -->
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <div class="section-label">Available templates</div>
+    <div class="generators">
+
+      <!-- Phantom Wallet -->
+      <a class="gen-card" href="/api/v1/screenshots/phantom">
+        <div class="card-icon purple">👻</div>
+        <div class="card-body">
+          <div class="card-title">Phantom Wallet</div>
+          <div class="card-desc">iOS notification + wallet screenshot with token balance and changes.</div>
+          <div class="card-tag active">
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#4cd964"/></svg>
+            Ready
+          </div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <!-- Coming soon cards -->
+      <div class="gen-card disabled">
+        <div class="card-icon" style="background:#1e1e26; border:1px solid var(--border); font-size:26px">🔜</div>
+        <div class="card-body">
+          <div class="card-title">Coming soon</div>
+          <div class="card-desc">Coming soon</div>
+          <div class="card-tag soon">Coming soon</div>
+        </div>
+      </div>
+
+      <div class="gen-card disabled">
+        <div class="card-icon" style="background:#1e1e26; border:1px solid var(--border); font-size:26px">🔜</div>
+        <div class="card-body">
+          <div class="card-title">Coming soon</div>
+          <div class="card-desc">Coming soon</div>
+          <div class="card-tag soon">Coming soon</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">Jeff Screenshot Generator · v0.0.1</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Phantom Screenshot Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e10;
+    --surface: #1a1a1f;
+    --surface2: #222228;
+    --border: rgba(255,255,255,0.07);
+    --purple: #8b7fe8;
+    --purple-dim: rgba(139,127,232,0.15);
+    --green: #4cd964;
+    --red: #ff3b30;
+    --white: #ffffff;
+    --gray: rgba(255,255,255,0.42);
+    --radius: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 780px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-header .logo {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, #8b7fe8, #5b50c4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .page-header h1 { font-size: 20px; font-weight: 700; }
+  .page-header p  { font-size: 13px; color: var(--gray); margin-top: 2px; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--purple);
+    margin-bottom: 18px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid.cols-1 { grid-template-columns: 1fr; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray);
+    letter-spacing: 0.2px;
+  }
+
+  input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--white);
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+    width: 100%;
+  }
+
+  input::placeholder { color: rgba(255,255,255,0.2); }
+
+  input:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(139,127,232,0.15);
+  }
+
+  input.error { border-color: var(--red); }
+  .field-error { font-size: 11px; color: var(--red); min-height: 16px; }
+
+  /* Logo upload */
+  .logo-upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-preview {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray);
+    font-size: 20px;
+  }
+
+  .logo-preview img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .logo-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px dashed rgba(139,127,232,0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--purple);
+    cursor: pointer;
+    text-align: center;
+    transition: background .15s, border-color .15s;
+  }
+
+  .logo-btn:hover {
+    background: var(--purple-dim);
+    border-color: var(--purple);
+  }
+
+  #logoInput { display: none; }
+
+  /* Submit */
+  .btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #8b7fe8, #5b50c4);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .btn-submit:hover  { opacity: .9; }
+  .btn-submit:active { transform: scale(.98); }
+  .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Spinner */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Result */
+  #result {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  #result.visible { display: flex; }
+
+  #result img {
+    max-width: 393px;
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s;
+  }
+
+  .btn-secondary:hover { background: #2a2a32; }
+
+  /* Alert */
+  .alert {
+    display: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .alert.error { background: rgba(255,59,48,0.12); border: 1px solid rgba(255,59,48,0.3); color: #ff6b60; }
+  .alert.visible { display: block; }
+
+  @media (max-width: 560px) {
+    .grid, .grid.cols-3 { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="logo">👻</div>
+    <div>
+      <h1>Phantom Screenshot Generator</h1>
+      <p>POST /api/v1/screenshots/phantom</p>
+    </div>
+  </div>
+
+  <!-- Notification block -->
+  <div class="card">
+    <div class="card-title">📣 Notification</div>
+    <div class="grid cols-3">
+      <div class="field">
+        <label>Domain</label>
+        <input id="domain" type="text" placeholder="solpulse.dev" maxlength="100"/>
+        <span class="field-error" id="err-domain"></span>
+      </div>
+      <div class="field">
+        <label>Name (coin)</label>
+        <input id="name" type="text" placeholder="PEPE" maxlength="50"/>
+        <span class="field-error" id="err-name"></span>
+      </div>
+      <div class="field">
+        <label>Amount (MCAP)</label>
+        <input id="amount" type="text" placeholder="150K" maxlength="20"/>
+        <span class="field-error" id="err-amount"></span>
+      </div>
+    </div>
+    <div class="grid cols-1" style="margin-top:14px">
+      <div class="field">
+        <label>Multiplier</label>
+        <input id="multiplier" type="text" placeholder="14.2" maxlength="20"/>
+        <span class="field-error" id="err-multiplier"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Token block -->
+  <div class="card">
+    <div class="card-title">🪙 Token</div>
+    <div class="grid">
+      <div class="field">
+        <label>Token Name</label>
+        <input id="token_name" type="text" placeholder="Ethereum" maxlength="50"/>
+        <span class="field-error" id="err-token_name"></span>
+      </div>
+      <div class="field">
+        <label>Token Ticker</label>
+        <input id="token_ticker" type="text" placeholder="ETH" maxlength="20"/>
+        <span class="field-error" id="err-token_ticker"></span>
+      </div>
+      <div class="field">
+        <label>Token Amount</label>
+        <input id="token_amount" type="text" placeholder="102.81726" maxlength="30"/>
+        <span class="field-error" id="err-token_amount"></span>
+      </div>
+      <div class="field">
+        <label>Token Amount USD</label>
+        <input id="token_amount_usd" type="text" placeholder="$2.90" maxlength="20"/>
+        <span class="field-error" id="err-token_amount_usd"></span>
+      </div>
+      <div class="field" style="grid-column: span 2">
+        <label>Token Change ($)</label>
+        <input id="token_change" type="number" placeholder="0.53 или -1.20" step="any"/>
+        <span class="field-error" id="err-token_change"></span>
+      </div>
+    </div>
+
+    <!-- Logo upload -->
+    <div style="margin-top:18px">
+      <label style="display:block; margin-bottom:10px">Token Logo</label>
+      <div class="logo-upload">
+        <div class="logo-preview" id="logoPreview">🪙</div>
+        <div class="logo-btn" onclick="document.getElementById('logoInput').click()">
+          Click to upload logo image (PNG, JPG, WebP)
+        </div>
+        <input type="file" id="logoInput" accept="image/png,image/jpeg,image/webp"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Solana block -->
+  <div class="card">
+    <div class="card-title">◎ Solana</div>
+    <div class="grid cols-3">
+      <div class="field">
+        <label>SOL Amount</label>
+        <input id="solana_amount" type="number" placeholder="0.023" step="any" min="0"/>
+        <span class="field-error" id="err-solana_amount"></span>
+      </div>
+      <div class="field">
+        <label>SOL in USDT</label>
+        <input id="solana_amount_usdt" type="number" placeholder="23.02" step="any" min="0"/>
+        <span class="field-error" id="err-solana_amount_usdt"></span>
+      </div>
+      <div class="field">
+        <label>SOL Change ($)</label>
+        <input id="solana_amount_change" type="number" placeholder="-0.39" step="any"/>
+        <span class="field-error" id="err-solana_amount_change"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- USDT block -->
+  <div class="card">
+    <div class="card-title">💵 USDT</div>
+    <div class="grid">
+      <div class="field">
+        <label>USDT Amount</label>
+        <input id="usdt_amount" type="number" placeholder="921.62" step="any" min="0"/>
+        <span class="field-error" id="err-usdt_amount"></span>
+      </div>
+      <div class="field">
+        <label>USDT Change ($)</label>
+        <input id="usdt_amount_change" type="number" placeholder="-0.06" step="any"/>
+        <span class="field-error" id="err-usdt_amount_change"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Time block -->
+  <div class="card">
+    <div class="card-title">🕐 Display Time</div>
+    <div class="field">
+      <label>Current Time (HH:MM)</label>
+      <input id="current_time" type="text" placeholder="08:22" maxlength="5"/>
+      <span class="field-error" id="err-current_time"></span>
+    </div>
+  </div>
+
+  <!-- Error alert -->
+  <div class="alert error" id="alertBox"></div>
+
+  <!-- Submit -->
+  <button class="btn-submit" id="btnSubmit" onclick="generate()">
+    <div class="spinner" id="spinner"></div>
+    <span id="btnLabel">Generate Screenshot</span>
+  </button>
+
+  <!-- Result -->
+  <div id="result">
+    <div class="card-title" style="width:100%">✅ Result</div>
+    <img id="resultImg" src="" alt="Screenshot"/>
+    <div class="result-actions">
+      <a class="btn-secondary" id="downloadBtn" download="phantom.jpg">⬇ Download</a>
+      <button class="btn-secondary" onclick="document.getElementById('result').classList.remove('visible')">✕ Close</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Auto-fill current time
+  const now = new Date();
+  document.getElementById('current_time').value =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  let logoDataUri = null;
+
+  // Logo preview
+  document.getElementById('logoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      logoDataUri = ev.target.result;
+      const preview = document.getElementById('logoPreview');
+      preview.innerHTML = `<img src="${logoDataUri}" alt="logo"/>`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const required = [
+    'domain','name','amount','multiplier',
+    'token_name','token_ticker','token_amount','token_amount_usd',
+    'token_change','solana_amount','solana_amount_usdt','solana_amount_change',
+    'usdt_amount','usdt_amount_change'
+  ];
+
+  function clearErrors() {
+    required.forEach(id => {
+      const el = document.getElementById(id);
+      const err = document.getElementById('err-' + id);
+      if (el) el.classList.remove('error');
+      if (err) err.textContent = '';
+    });
+    const alert = document.getElementById('alertBox');
+    alert.textContent = '';
+    alert.classList.remove('visible');
+  }
+
+  function setLoading(state) {
+    document.getElementById('btnSubmit').disabled = state;
+    document.getElementById('spinner').style.display = state ? 'block' : 'none';
+    document.getElementById('btnLabel').textContent = state ? 'Generating...' : 'Generate Screenshot';
+  }
+
+  async function generate() {
+    clearErrors();
+
+    const get = (id) => document.getElementById(id).value.trim();
+
+    // Validate required
+    let hasError = false;
+    required.forEach(id => {
+      if (get(id) === '') {
+        document.getElementById(id).classList.add('error');
+        document.getElementById('err-' + id).textContent = 'Required';
+        hasError = true;
+      }
+    });
+    if (hasError) return;
+
+    const payload = {
+      domain: get('domain'),
+      name: get('name'),
+      amount: get('amount'),
+      multiplier: get('multiplier'),
+      token_name: get('token_name'),
+      token_ticker: get('token_ticker'),
+      token_amount: get('token_amount'),
+      token_amount_usd: get('token_amount_usd'),
+      token_change: parseFloat(get('token_change')),
+      token_logo: logoDataUri || null,
+      solana_amount: parseFloat(get('solana_amount')),
+      solana_amount_usdt: parseFloat(get('solana_amount_usdt')),
+      solana_amount_change: parseFloat(get('solana_amount_change')),
+      usdt_amount: parseFloat(get('usdt_amount')),
+      usdt_amount_change: parseFloat(get('usdt_amount_change')),
+      current_time: get('current_time'),
+    };
+
+    setLoading(true);
+
+    try {
+      const resp = await fetch('/api/v1/screenshots/phantom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        const detail = err.detail;
+        if (Array.isArray(detail)) {
+          detail.forEach(e => {
+            const field = e.loc[e.loc.length - 1];
+            const input = document.getElementById(field);
+            const errEl = document.getElementById('err-' + field);
+            if (input) input.classList.add('error');
+            if (errEl) errEl.textContent = e.msg;
+          });
+        } else {
+          const alertBox = document.getElementById('alertBox');
+          alertBox.textContent = JSON.stringify(detail);
+          alertBox.classList.add('visible');
+        }
+        return;
+      }
+
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const img = document.getElementById('resultImg');
+      img.src = url;
+      document.getElementById('downloadBtn').href = url;
+      document.getElementById('result').classList.add('visible');
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (e) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = 'Network error: ' + e.message;
+      alertBox.classList.add('visible');
+    } finally {
+      setLoading(false);
+    }
+  }
+</script>
+</body>
+</html>

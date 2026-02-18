@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phantom Screenshot</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #111111;
+      --bg-card:    #1c1c1c;
+      --bg-btn:     #1e1e1e;
+      --purple:     #8b7fe8;
+      --purple-dim: rgba(139,127,232,0.15);
+      --white:      #ffffff;
+      --gray:       rgba(255,255,255,0.42);
+      --font:       'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --r:          14px;
+      /* Цвета для UI */
+      --green:      #4cd964;
+      --red:        #ff3b30;
+      --red-bg:     #7a1f1f;
+    }
+
+    body {
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      color: var(--white);
+    }
+
+    /* --- Контейнер скриншота (iPhone 15 Pro) --- */
+    .screenshot-container {
+      width: 393px;
+      height: 852px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- STATUS BAR --- */
+    .status-bar {
+      width: 100%;
+      height: 54px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 22px 0 28px;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
+      z-index: 100;
+      margin-top: 2px;
+    }
+
+    .time {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+    }
+
+    .status-icons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Signal */
+    .signal {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 13px;
+    }
+    .signal div {
+        width: 3.5px;
+        background-color: #ffffff;
+        border-radius: 1px;
+    }
+    .signal .bar-1 { height: 4px; }
+    .signal .bar-2 { height: 6px; }
+    .signal .bar-3 { height: 9px; }
+    .signal .bar-4 { height: 13px; }
+
+    /* Wi-Fi */
+    .wifi-icon {
+        width: 23px;
+        height: auto;
+        fill: white;
+        margin-bottom: 1px;
+    }
+
+    /* Battery */
+    .battery-icon {
+        width: 29px;
+        height: auto;
+        display: block;
+    }
+
+    /* --- NOTIFICATION STYLES --- */
+    .notification {
+        position: absolute;
+        top: 62px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 373px;
+        background-color: rgba(37, 37, 37, 0.85);
+        border-radius: 24px;
+        padding: 14px 16px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        -webkit-backdrop-filter: blur(30px);
+        backdrop-filter: blur(30px);
+        z-index: 200;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .notif-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .notif-app-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notif-icon-container {
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .notif-icon-container svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .notif-app-name {
+        font-size: 13px;
+        font-weight: 400;
+        color: #98989E;
+        line-height: 1;
+    }
+
+    .notif-time {
+        font-size: 13px;
+        color: #98989E;
+        line-height: 1;
+    }
+
+    .notif-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .notif-sender {
+        font-size: 15px;
+        font-weight: 600;
+        color: #ffffff;
+        line-height: 20px;
+    }
+
+    .notif-message {
+        font-size: 15px;
+        font-weight: 400;
+        color: #ffffff;
+        line-height: 20px;
+    }
+
+    /* --- PHANTOM UI --- */
+
+    .body {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 84px;
+      scrollbar-width: none;
+    }
+    .body::-webkit-scrollbar { display: none; }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px 10px;
+    }
+    .acct-row { display: flex; align-items: center; gap: 11px; }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #e8735a, #b03020);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .avatar-inner {
+      width: 100%; height: 100%;
+      background:
+        radial-gradient(circle at 30% 35%, #ff7a5a 0%, transparent 40%),
+        radial-gradient(circle at 70% 65%, #8b3020 0%, transparent 45%),
+        linear-gradient(160deg, #d45030, #7a1a10);
+      border-radius: 50%;
+    }
+    .acct-meta { display: flex; flex-direction: column; gap: 1px; }
+    .handle    { font-size: 11.5px; color: var(--gray); font-weight: 400; letter-spacing: 0.1px; }
+    .acct-name { font-size: 18px; font-weight: 700; color: var(--white); letter-spacing: -0.4px; }
+    .hdr-icons { display: flex; gap: 18px; }
+    .hico {
+      background: none; border: none; cursor: pointer;
+      color: var(--white); padding: 2px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Balance */
+    .balance-wrap { padding: 2px 20px 14px; }
+    .balance-total {
+      font-size: 52px; font-weight: 800;
+      letter-spacing: -2.5px; line-height: 1;
+      color: var(--white);
+    }
+    .balance-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 8px;
+    }
+    .chg-amt   { font-size: 16px; font-weight: 500; color: var(--red); }
+    .chg-badge {
+      font-size: 13px; font-weight: 700;
+      background: var(--red-bg); color: #ff6b60;
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    /* Actions */
+    .actions {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 9px; padding: 4px 16px 18px;
+    }
+    .act {
+      background: var(--bg-btn);
+      border: none; border-radius: 14px;
+      padding: 16px 6px 13px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .act svg { display: block; }
+    .act:active { opacity: .65; }
+    .act-lbl { font-size: 12px; font-weight: 500; color: var(--white); }
+
+    /* Banner */
+    .banner {
+      margin: 0 14px 18px;
+      background: #1a1a1a;
+      border-radius: var(--r);
+      padding: 16px 18px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative; overflow: hidden;
+      min-height: 108px;
+    }
+    .banner-text-block { flex: 1; }
+    .trending-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--gray);
+    }
+    .banner-title {
+      font-size: 20px; font-weight: 700;
+      color: var(--white); line-height: 1.25;
+      margin-top: 6px;
+    }
+    .banner-cta {
+      display: block; margin-top: 10px;
+      font-size: 15px; font-weight: 600; color: var(--purple);
+      text-decoration: none; cursor: pointer;
+    }
+    .banner-close {
+      position: absolute; top: 12px; right: 14px;
+      font-size: 13px; color: var(--gray); cursor: pointer;
+      background: rgba(255,255,255,0.08); border: none;
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .banner-coins {
+      display: flex; flex-direction: column;
+      align-items: center; flex-shrink: 0; margin-left: 8px;
+    }
+    .coin {
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; box-shadow: 0 3px 10px rgba(0,0,0,0.6);
+    }
+    .coin-eth {
+      width: 54px; height: 54px; z-index: 2;
+      background: linear-gradient(135deg, #c0c8d4, #8a95a0);
+    }
+    .coin-btc {
+      width: 64px; height: 64px; z-index: 1;
+      background: linear-gradient(135deg, #f7931a, #d4720a);
+      margin-top: -18px;
+      font-size: 28px; font-weight: 900; color: white;
+    }
+
+    /* Tokens */
+    .section-hdr {
+      display: flex; align-items: center; gap: 5px;
+      padding: 2px 18px 10px;
+      font-size: 19px; font-weight: 700; color: var(--white);
+      cursor: pointer;
+    }
+
+    .tokens { display: flex; flex-direction: column; gap: 7px; padding: 0 13px; }
+
+    .trow {
+      display: flex; align-items: center; gap: 13px;
+      background: var(--bg-card); border-radius: 14px;
+      padding: 13px 15px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.035);
+      transition: background .15s;
+    }
+    .trow:hover { background: #222; }
+
+    .tlogo {
+      width: 48px; height: 48px; border-radius: 50%;
+      flex-shrink: 0; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tlogo-face {
+      width: 100%; height: 100%; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* chain-dot удален */
+
+    .l-usdt   { /* Фон задает сама SVG */ }
+    .l-sol    { /* Фон задает сама SVG */ }
+    .l-war    { background: #161616; border: 1.5px solid #2a2a2a; font-size:10px; font-weight:900; color:#ddd; letter-spacing:-0.5px; }
+
+    .t-info { flex: 1; min-width: 0; }
+    .t-name {
+      font-size: 15.5px; font-weight: 600; color: var(--white);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .t-sub  { font-size: 13px; color: var(--gray); margin-top: 2px; font-weight: 400; }
+    .t-right { text-align: right; }
+    .t-usd   { font-size: 15.5px; font-weight: 600; color: var(--white); }
+    .t-chg   { font-size: 13px; font-weight: 500; margin-top: 2px; }
+    .up      { color: var(--green); }
+    .dn      { color: var(--red); }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 84px;
+      background: rgba(17,17,17,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: flex-start;
+      padding: 10px 8px 0;
+      z-index: 50;
+    }
+    .nav-it {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px; cursor: pointer; padding: 6px 0;
+    }
+    .nav-ico {
+      width: 32px; height: 32px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-it.active .nav-ico { background: var(--purple-dim); }
+    .nav-it.active svg { color: var(--purple); }
+    .nav-it:not(.active) svg { color: var(--gray); }
+
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 5px;
+      width: 138px;
+      background: #ffffff;
+      border-radius: 3px;
+      z-index: 101;
+    }
+  </style>
+</head>
+<body>
+
+<div class="screenshot-container">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="time">{{current_time}}</div>
+    <div class="status-icons">
+        <div class="signal">
+            <div class="bar-1"></div>
+            <div class="bar-2"></div>
+            <div class="bar-3"></div>
+            <div class="bar-4"></div>
+        </div>
+        <svg class="wifi-icon" viewBox="-1 0 26 24" xmlns="http://www.w3.org/2000/svg">
+            <g fill="white">
+                <path d="M12 21l-4.24-4.24a6 6 0 0 1 8.48 0L12 21z" />
+                <path d="M12 12.5a9.5 9.5 0 0 0-6.72 2.78l-2.12-2.12a12.5 12.5 0 0 1 17.68 0l-2.12 2.12a9.5 9.5 0 0 0-6.72-2.78z" />
+                <path d="M12 4a18 18 0 0 0-12.73 5.27l2.12 2.12a15 15 0 0 1 21.22 0l2.12-2.12A18 18 0 0 0 12 4z" />
+            </g>
+        </svg>
+        <svg class="battery-icon" viewBox="0 0 25 11.6" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.7" width="21.3" height="10.2" rx="3.3" fill="white"/>
+            <path d="M22.4 4.1C23.4 4.1 24.1 4.8 24.1 5.8C24.1 6.8 23.4 7.5 22.4 7.5V4.1Z" fill="white"/>
+            <text x="11.1" y="8.9" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="800" font-size="8.1" text-anchor="middle" letter-spacing="-0.5" fill="black">100</text>
+        </svg>
+    </div>
+  </div>
+
+  <!-- iOS Notification -->
+  <div class="notification">
+      <div class="notif-header">
+          <div class="notif-app-info">
+              <div class="notif-icon-container">
+                  <svg viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clip-path="url(#clip0_phantom)">
+                          <rect width="1200" height="1200" rx="257.592" fill="#AB9FF2"/>
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M517.219 779.814C470.102 852.012 391.148 943.378 286.09 943.378C236.426 943.378 188.672 922.933 188.672 834.122C188.672 607.943 497.48 257.813 784.004 257.813C947.004 257.813 1011.95 370.902 1011.95 499.326C1011.95 664.168 904.98 852.651 798.648 852.651C764.902 852.651 748.347 834.122 748.347 804.732C748.347 797.065 749.621 788.759 752.168 779.814C715.875 841.789 645.836 899.292 580.254 899.292C532.5 899.292 508.305 869.263 508.305 827.094C508.305 811.76 511.488 795.787 517.219 779.814ZM904.363 494.869C904.363 532.291 882.284 551.002 857.586 551.002C832.514 551.002 810.809 532.291 810.809 494.869C810.809 457.448 832.514 438.737 857.586 438.737C882.284 438.737 904.363 457.448 904.363 494.869ZM764.031 494.871C764.031 532.293 741.952 551.004 717.254 551.004C692.182 551.004 670.477 532.293 670.477 494.871C670.477 457.449 692.182 438.739 717.254 438.739C741.952 438.739 764.031 457.449 764.031 494.871Z" fill="#FFFDF8"/>
+                      </g>
+                      <defs>
+                          <clipPath id="clip0_phantom">
+                              <rect width="1200" height="1200" fill="white"/>
+                          </clipPath>
+                      </defs>
+                  </svg>
+              </div>
+              <span class="notif-app-name">Phantom</span>
+          </div>
+          <span class="notif-time">now</span>
+      </div>
+      <div class="notif-content">
+          <div class="notif-sender">{{domain}}: Sniped {{name}} at {{amount}} MCAP</div>
+          <div class="notif-message">You're up {{multiplier}}x with SolPulse AI monitoring!</div>
+      </div>
+  </div>
+
+  <div class="body">
+    <!-- Header -->
+    <div class="header">
+      <div class="acct-row">
+        <div class="avatar"><div class="avatar-inner"></div></div>
+        <div class="acct-meta">
+          <span class="handle">@jestkiebabosi</span>
+          <span class="acct-name">Аккаунт 3</span>
+        </div>
+      </div>
+      <div class="hdr-icons">
+        <button class="hico">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="hico">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <line x1="20" y1="20" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Balance -->
+    <div class="balance-wrap">
+      <div class="balance-total">$953.95</div>
+      <div class="balance-row">
+        <span class="chg-amt">−$0.25</span>
+        <span class="chg-badge">−0.03%</span>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="act">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 2L11 13" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="act-lbl">Send</span>
+      </button>
+      <button class="act">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 6H10C6.68629 6 4 8.68629 4 12" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 2L20 6L16 10" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 18H14C17.3137 18 20 15.3137 20 12" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 22L4 18L8 14" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="act-lbl">Swap</span>
+      </button>
+      <button class="act">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#b3a9ff" transform="scale(0.24)">
+    <!-- Верхний левый маркер -->
+    <path d="M28 8C16.9543 8 8 16.9543 8 28V32C8 43.0457 16.9543 52 28 52H32C43.0457 52 52 43.0457 52 32V28C52 16.9543 43.0457 8 32 8H28ZM28 17H32C38.0751 17 43 21.9249 43 28V32C43 38.0751 38.0751 43 32 43H28C21.9249 43 17 38.0751 17 32V28C17 21.9249 21.9249 17 28 17Z" />
+    <rect x="25" y="25" width="10" height="10" rx="3" />
+
+    <!-- Верхний правый маркер -->
+    <path d="M68 8C56.9543 8 48 16.9543 48 28V32C48 43.0457 56.9543 52 68 52H72C83.0457 52 92 43.0457 92 32V28C92 16.9543 83.0457 8 72 8H68ZM68 17H72C78.0751 17 83 21.9249 83 28V32C83 38.0751 78.0751 43 72 43H68C61.9249 43 57 38.0751 57 32V28C57 21.9249 61.9249 17 68 17Z" />
+    <rect x="65" y="25" width="10" height="10" rx="3" />
+
+    <!-- Нижний левый маркер -->
+    <path d="M28 48C16.9543 48 8 56.9543 8 68V72C8 83.0457 16.9543 92 28 92H32C43.0457 92 52 83.0457 52 72V68C52 56.9543 43.0457 48 32 48H28ZM28 57H32C38.0751 57 43 61.9249 43 68V72C43 78.0751 38.0751 83 32 83H28C21.9249 83 17 78.0751 17 72V68C17 61.9249 21.9249 57 28 57Z" />
+    <rect x="25" y="65" width="10" height="10" rx="3" />
+
+    <!-- Нижний правый паттерн (5 точек) -->
+    <rect x="53" y="53" width="11" height="11" rx="4" />
+    <rect x="79" y="53" width="11" height="11" rx="4" />
+    <rect x="53" y="79" width="11" height="11" rx="4" />
+    <rect x="79" y="79" width="11" height="11" rx="4" />
+    <rect x="66" y="66" width="11" height="11" rx="4" />
+  </g>
+</svg>
+
+        <span class="act-lbl">Receive</span>
+      </button>
+      <button class="act">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 1V23" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17 5H9.5C7.567 5 6 6.567 6 8.5C6 10.433 7.567 12 9.5 12H14.5C16.433 12 18 13.567 18 15.5C18 17.433 16.433 19 14.5 19H6" stroke="#A390F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="act-lbl">Buy</span>
+      </button>
+    </div>
+
+    <!-- Banner -->
+    <div class="banner">
+      <div class="banner-text-block">
+        <div class="trending-tag">Trending</div>
+        <div class="banner-title">Join thousands of users<br>trading Bitcoin daily</div>
+        <span class="banner-cta">Trade now</span>
+      </div>
+      <button class="banner-close">✕</button>
+      <div class="banner-coins">
+        <div class="coin coin-eth">
+          <svg width="30" height="30" viewBox="0 0 32 32">
+            <polygon points="16,3 26,16 16,21 6,16" fill="#c0c8d4"/>
+            <polygon points="16,3 26,16 16,16"       fill="#8a95a0"/>
+            <polygon points="16,21 26,16 16,29 6,16" fill="#8a95a0"/>
+            <polygon points="16,21 16,29 26,16"      fill="#5a6470"/>
+          </svg>
+        </div>
+        <div class="coin coin-btc">₿</div>
+      </div>
+    </div>
+
+    <!-- Tokens -->
+    <div class="section-hdr">
+      Tokens
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="9 18 15 12 9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="tokens">
+      <!-- USDT -->
+      <div class="trow">
+        <div class="tlogo">
+          <div class="tlogo-face l-usdt">
+            <!-- NEW USDT SVG -->
+            <svg viewBox="4.465 13.693 124.4 124.4" style="width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="66.665" cy="75.893" r="62.2" fill="#26a17b"/>
+              <g fill="#fff">
+                <path d="m73.295 81.633v-.01c-.43.03-2.65.16-7.59.16-3.95 0-6.72-.11-7.7-.16v.01c-15.19-.67-26.52-3.31-26.52-6.48 0-3.16 11.34-5.81 26.52-6.48v10.33c.99.07 3.84.24 7.77.24 4.72 0 7.08-.2 7.52-.24v-10.32c15.16.68 26.46 3.32 26.46 6.48s-11.31 5.8-26.46 6.48m0-14.03v-9.24h21.15v-14.09h-57.58v14.09h21.15v9.24c-17.19.79-30.11 4.19-30.11 8.27s12.93 7.48 30.11 8.28v29.62h15.29v-29.62c17.16-.79 30.06-4.19 30.06-8.27 0-4.07-12.9-7.48-30.06-8.27"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="t-info">
+          <div class="t-name">
+            USDT
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#8b7fe8">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <div class="t-sub">{{usdt_amount}} USDT</div>
+        </div>
+        <div class="t-right">
+          <div class="t-usd">${{usdt_amount}}</div>
+          <div class="t-chg {{ 'up' if usdt_amount_change >= 0 else 'dn' }}">
+  {{ '+' if usdt_amount_change >= 0 else '-' }}${{ usdt_amount_change | abs }}
+</div>
+
+        </div>
+      </div>
+
+      <!-- Solana -->
+      <div class="trow">
+        <div class="tlogo">
+          <div class="tlogo-face l-sol">
+            <!-- NEW SOL SVG -->
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="-63.80 -106.80 525.29 525.29" style="width:100%; height:100%;">
+                <style type="text/css">
+                    .st0{fill:url(#SVGID_1_);}
+                    .st1{fill:url(#SVGID_2_);}
+                    .st2{fill:url(#SVGID_3_);}
+                </style>
+                <circle cx="198.85" cy="155.85" r="262.65" fill="#000000"/>
+                <linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="360.8791" y1="351.4553" x2="141.213" y2="-69.2936" gradientTransform="matrix(1 0 0 -1 0 314)">
+                    <stop offset="0" style="stop-color:#00FFA3"/>
+                    <stop offset="1" style="stop-color:#DC1FFF"/>
+                </linearGradient>
+                <path class="st0" d="M64.6,237.9c2.4-2.4,5.7-3.8,9.2-3.8h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5
+                    c-5.8,0-8.7-7-4.6-11.1L64.6,237.9z"/>
+                <linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="264.8291" y1="401.6014" x2="45.163" y2="-19.1475" gradientTransform="matrix(1 0 0 -1 0 314)">
+                    <stop offset="0" style="stop-color:#00FFA3"/>
+                    <stop offset="1" style="stop-color:#DC1FFF"/>
+                </linearGradient>
+                <path class="st1" d="M64.6,3.8C67.1,1.4,70.4,0,73.8,0h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5
+                    c-5.8,0-8.7-7-4.6-11.1L64.6,3.8z"/>
+                <linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="312.5484" y1="376.688" x2="92.8822" y2="-44.061" gradientTransform="matrix(1 0 0 -1 0 314)">
+                    <stop offset="0" style="stop-color:#00FFA3"/>
+                    <stop offset="1" style="stop-color:#DC1FFF"/>
+                </linearGradient>
+                <path class="st2" d="M333.1,120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8,0-8.7,7-4.6,11.1l62.7,62.7c2.4,2.4,5.7,3.8,9.2,3.8h317.4
+                    c5.8,0,8.7-7,4.6-11.1L333.1,120.1z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="t-info">
+          <div class="t-name">
+            Solana
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#8b7fe8">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <div class="t-sub">{{solana_amount}} SOL</div>
+        </div>
+        <div class="t-right">
+          <div class="t-usd">${{solana_amount_usdt}}</div>
+          <div class="t-chg {{ 'up' if solana_amount_change >= 0 else 'dn' }}">
+  {{ '+' if solana_amount_change >= 0 else '-' }}${{ solana_amount_change | abs }}
+</div>
+
+        </div>
+      </div>
+
+      <!-- WAR -->
+      <div class="trow">
+        <div class="tlogo">
+          <div class="tlogo-face l-war">
+          {% if token_logo %}
+          <img src="{{ token_logo }}"
+               style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">
+          {% endif %}
+        </div>
+        </div>
+        <div class="t-info">
+          <div class="t-name">
+            {{token_name}}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#8b7fe8">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <div class="t-sub">{{token_amount}} {{token_ticker}}</div>
+        </div>
+        <div class="t-right">
+          <div class="t-usd">{{token_amount_usd}}</div>
+          <div class="t-chg {{ 'up' if token_change >= 0 else 'dn' }}">
+  {{ '+' if token_change >= 0 else '-' }}${{ token_change | abs }}
+</div>
+
+        </div>
+      </div>
+
+    <div style="height:24px;"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="nav-it active">
+      <div class="nav-ico">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 10L12 2L22 10V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V10Z" fill="#A390F0"/>
+          <path d="M9 22V14H15V22" fill="#1C1C1E"/>
+        </svg>
+      </div>
+    </div>
+    <div class="nav-it">
+      <div class="nav-ico">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="5" width="20" height="14" rx="3" stroke="#7A7A7A" stroke-width="2"/>
+          <rect x="15" y="8" width="4" height="3" rx="0.5" fill="#7A7A7A"/>
+          <line x1="5" y1="16" x2="11" y2="16" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="nav-it">
+      <div class="nav-ico">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 7H10C6.68629 7 4 9.68629 4 13" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 3L20 7L16 11" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 17H14C17.3137 17 20 14.3137 20 11" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 21L4 17L8 13" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="nav-it">
+      <div class="nav-ico">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 5H4C2.89543 5 2 5.89543 2 7V16C2 17.1046 2.89543 18 4 18H8L10 21L13 18H20C21.1046 18 22 17.1046 22 16V7C22 5.89543 21.1046 5 20 5Z" stroke="#7A7A7A" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="6" y1="9" x2="16" y2="9" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6" y1="13" x2="12" y2="13" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="nav-it">
+      <div class="nav-ico">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="7" stroke="#7A7A7A" stroke-width="2"/>
+          <path d="M20 20L16.5 16.5" stroke="#7A7A7A" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+</div>
+</body>
+</html>
