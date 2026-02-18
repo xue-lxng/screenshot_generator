@@ -680,7 +680,7 @@
           <div class="t-sub">{{token_amount}} {{token_ticker}}</div>
         </div>
         <div class="t-right">
-          <div class="t-usd">{{token_amount_usd}}</div>
+          <div class="t-usd">${{token_amount_usd}}</div>
           <div class="t-chg {{ 'up' if token_change >= 0 else 'dn' }}">
   {{ '+' if token_change >= 0 else '-' }}${{ token_change | abs }}
 </div>
