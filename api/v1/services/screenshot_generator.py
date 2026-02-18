@@ -7,6 +7,8 @@ from PIL import Image
 from jinja2 import Environment, FileSystemLoader
 from playwright.async_api import async_playwright, Browser, BrowserContext, Playwright
 
+from core.caching.in_redis import cache
+
 BASE_DIR = Path(__file__).parent.parent.parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 
@@ -56,11 +58,18 @@ class ScreenshotService:
         if self._playwright:
             await self._playwright.stop()
 
-    async def render_screenshot(self, ctx: dict, template_name: str) -> bytes:
+    async def render_screenshot(self, ctx: dict, template_name: str, task_id: str) -> bytes:
+        # Проверяем кэш
+        cache_key = f"{task_id}"
+        cached = await cache.get(cache_key, raw=True)
+        if cached:
+            return cached
+
+        # Генерируем
         html = render_html(ctx, template_name)
         page = await self._context.new_page()
         try:
-            await page.set_content(html, wait_until="networkidle")
+            await page.set_content(html, wait_until="domcontentloaded")
             png_bytes = await page.screenshot(full_page=False)
         finally:
             await page.close()
@@ -68,7 +77,12 @@ class ScreenshotService:
         img = Image.open(BytesIO(png_bytes)).convert("RGB")
         buf = BytesIO()
         img.save(buf, "JPEG", quality=95)
-        return buf.getvalue()
+        jpeg = buf.getvalue()
+
+        # Сохраняем в кэш — 1 час
+        await cache.set(cache_key, jpeg, ttl=3600, raw=True)
+
+        return jpeg
 
 
 screenshot_service = ScreenshotService()
