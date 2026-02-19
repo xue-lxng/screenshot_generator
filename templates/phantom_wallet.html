@@ -576,38 +576,6 @@
       </svg>
     </div>
 
-    <div class="tokens">
-      <!-- USDT -->
-      <div class="trow">
-        <div class="tlogo">
-          <div class="tlogo-face l-usdt">
-            <!-- NEW USDT SVG -->
-            <svg viewBox="4.465 13.693 124.4 124.4" style="width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="66.665" cy="75.893" r="62.2" fill="#26a17b"/>
-              <g fill="#fff">
-                <path d="m73.295 81.633v-.01c-.43.03-2.65.16-7.59.16-3.95 0-6.72-.11-7.7-.16v.01c-15.19-.67-26.52-3.31-26.52-6.48 0-3.16 11.34-5.81 26.52-6.48v10.33c.99.07 3.84.24 7.77.24 4.72 0 7.08-.2 7.52-.24v-10.32c15.16.68 26.46 3.32 26.46 6.48s-11.31 5.8-26.46 6.48m0-14.03v-9.24h21.15v-14.09h-57.58v14.09h21.15v9.24c-17.19.79-30.11 4.19-30.11 8.27s12.93 7.48 30.11 8.28v29.62h15.29v-29.62c17.16-.79 30.06-4.19 30.06-8.27 0-4.07-12.9-7.48-30.06-8.27"/>
-              </g>
-            </svg>
-          </div>
-        </div>
-        <div class="t-info">
-          <div class="t-name">
-            USDT
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="#8b7fe8">
-              <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
-            </svg>
-          </div>
-          <div class="t-sub">{{usdt_amount}} USDT</div>
-        </div>
-        <div class="t-right">
-          <div class="t-usd">${{usdt_amount}}</div>
-          <div class="t-chg {{ 'up' if usdt_amount_change >= 0 else 'dn' }}">
-  {{ '+' if usdt_amount_change >= 0 else '-' }}${{ usdt_amount_change | abs }}
-</div>
-
-        </div>
-      </div>
-
       <!-- Solana -->
       <div class="trow">
         <div class="tlogo">

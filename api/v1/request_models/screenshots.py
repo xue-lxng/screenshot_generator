@@ -1,4 +1,5 @@
 import datetime
+import random
 
 from pydantic import BaseModel, field_validator, Field
 
@@ -15,26 +16,6 @@ class PhantomScreenshot(BaseModel):
     token_amount_usd: str = Field(..., min_length=1, max_length=20)
     token_change: float
     token_logo: str | None = None
-
-    solana_amount: float = Field(..., ge=0)
-    solana_amount_usdt: float = Field(..., ge=0)
-    solana_amount_change: float
-
-    usdt_amount: float = Field(..., ge=0)
-    usdt_amount_change: float
-
-    current_time: str = Field(
-        default_factory=lambda: datetime.datetime.utcnow().strftime("%H:%M")
-    )
-
-    @field_validator("current_time")
-    @classmethod
-    def validate_time_format(cls, v: str) -> str:
-        try:
-            datetime.datetime.strptime(v, "%H:%M")
-        except ValueError:
-            raise ValueError("current_time должен быть в формате HH:MM")
-        return v
 
     @field_validator("token_logo")
     @classmethod

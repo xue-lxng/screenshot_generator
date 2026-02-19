@@ -1,4 +1,6 @@
 import asyncio
+import datetime
+import random
 import uuid
 from pathlib import Path
 
@@ -8,6 +10,7 @@ from starlette.responses import HTMLResponse
 
 from api.v1.request_models.screenshots import PhantomScreenshot
 from api.v1.response_models.screenshots import ScreenshotTaskResponse
+from api.v1.services.crypto_rates import get_crypto_price
 from api.v1.services.screenshot_generator import screenshot_service
 from core.caching.in_redis import cache
 
@@ -25,9 +28,18 @@ PROJECT_ROOT = (
 )
 async def generate_phantom_screenshot(ctx: PhantomScreenshot) -> ScreenshotTaskResponse:
     task_id = f"phantom_{uuid.uuid4()}"
+    context = ctx.model_dump()
+    rate = await get_crypto_price(
+        "SOL", "usd"
+    )
+    print(rate)
+    context["solana_amount"] = round(random.uniform(1, 10), 6)
+    context["solana_amount_usdt"] = round(rate["price"] * context["solana_amount"], 2)
+    context["solana_amount_change"] = round(random.uniform(0, 2) * random.choice([-1, 1]), 2)
+    context["current_time"] = datetime.datetime.utcnow().strftime("%H:%M")
     try:
         asyncio.create_task(screenshot_service.render_screenshot(
-            ctx.model_dump(),
+            context,
             template_name="phantom_wallet.html",
             task_id=task_id
         ))

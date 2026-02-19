@@ -329,51 +329,7 @@
       </div>
     </div>
   </div>
-
-  <div class="card">
-    <div class="card-title">◎ Solana</div>
-    <div class="grid cols-3">
-      <div class="field">
-        <label>SOL Amount</label>
-        <input id="solana_amount" type="number" placeholder="0.023" step="any" min="0"/>
-        <span class="field-error" id="err-solana_amount"></span>
-      </div>
-      <div class="field">
-        <label>SOL in USDT</label>
-        <input id="solana_amount_usdt" type="number" placeholder="23.02" step="any" min="0"/>
-        <span class="field-error" id="err-solana_amount_usdt"></span>
-      </div>
-      <div class="field">
-        <label>SOL Change ($)</label>
-        <input id="solana_amount_change" type="number" placeholder="-0.39" step="any"/>
-        <span class="field-error" id="err-solana_amount_change"></span>
-      </div>
-    </div>
   </div>
-
-  <div class="card">
-    <div class="card-title">💵 USDT</div>
-    <div class="grid">
-      <div class="field">
-        <label>USDT Amount</label>
-        <input id="usdt_amount" type="number" placeholder="921.62" step="any" min="0"/>
-        <span class="field-error" id="err-usdt_amount"></span>
-      </div>
-      <div class="field">
-        <label>USDT Change ($)</label>
-        <input id="usdt_amount_change" type="number" placeholder="-0.06" step="any"/>
-        <span class="field-error" id="err-usdt_amount_change"></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🕐 Display Time</div>
-    <div class="field">
-      <label>Current Time (HH:MM)</label>
-      <input id="current_time" type="text" placeholder="08:22" maxlength="5"/>
-      <span class="field-error" id="err-current_time"></span>
-    </div>
   </div>
 
   <div class="alert error" id="alertBox"></div>
@@ -404,10 +360,6 @@
 </div>
 
 <script>
-  const now = new Date();
-  document.getElementById('current_time').value =
-    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-
   let logoDataUri = null;
   let pollingTimer = null;
 
@@ -426,8 +378,7 @@
   const required = [
     'domain','name','amount','multiplier',
     'token_name','token_ticker','token_amount','token_amount_usd',
-    'token_change','solana_amount','solana_amount_usdt','solana_amount_change',
-    'usdt_amount','usdt_amount_change'
+    'token_change'
   ];
 
   function clearErrors() {
@@ -571,12 +522,6 @@
       token_amount_usd:     get('token_amount_usd'),
       token_change:         parseFloat(get('token_change')),
       token_logo:           logoDataUri || null,
-      solana_amount:        parseFloat(get('solana_amount')),
-      solana_amount_usdt:   parseFloat(get('solana_amount_usdt')),
-      solana_amount_change: parseFloat(get('solana_amount_change')),
-      usdt_amount:          parseFloat(get('usdt_amount')),
-      usdt_amount_change:   parseFloat(get('usdt_amount_change')),
-      current_time:         get('current_time'),
     };
 
     setLoading(true);
