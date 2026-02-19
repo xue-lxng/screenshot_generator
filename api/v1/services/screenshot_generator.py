@@ -70,6 +70,7 @@ class ScreenshotService:
         html = render_html(ctx, template_name)
         page = await self._context.new_page()
         try:
+            await page.set_viewport_size({"width": 852, "height": 852})
             await page.set_content(html, wait_until="domcontentloaded")
             png_bytes = await page.screenshot(full_page=False)
         finally:
