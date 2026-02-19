@@ -261,6 +261,7 @@
     </div>
   </div>
 
+  <!-- 📣 Notification -->
   <div class="card">
     <div class="card-title">📣 Notification</div>
     <div class="grid cols-3">
@@ -276,19 +277,32 @@
       </div>
       <div class="field">
         <label>Amount (MCAP)</label>
-        <input id="amount" type="text" placeholder="150K" maxlength="20"/>
+        <input id="amount" type="text" placeholder="150K" maxlength="7"/>
         <span class="field-error" id="err-amount"></span>
       </div>
     </div>
     <div class="grid cols-1" style="margin-top:14px">
       <div class="field">
         <label>Multiplier</label>
-        <input id="multiplier" type="text" placeholder="14.2" maxlength="20"/>
+        <input id="multiplier" type="text" placeholder="14.2x" maxlength="20"/>
         <span class="field-error" id="err-multiplier"></span>
       </div>
     </div>
   </div>
 
+  <!-- 💵 Wallet -->
+  <div class="card">
+    <div class="card-title">💵 Wallet</div>
+    <div class="grid cols-1">
+      <div class="field">
+        <label>USDT Amount</label>
+        <input id="usdt_amount" type="number" placeholder="921.62" step="any" min="0"/>
+        <span class="field-error" id="err-usdt_amount"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🪙 Token -->
   <div class="card">
     <div class="card-title">🪙 Token</div>
     <div class="grid">
@@ -304,18 +318,13 @@
       </div>
       <div class="field">
         <label>Token Amount</label>
-        <input id="token_amount" type="text" placeholder="102.81726" maxlength="30"/>
+        <input id="token_amount" type="number" placeholder="102.81726" step="any" min="0"/>
         <span class="field-error" id="err-token_amount"></span>
       </div>
       <div class="field">
-        <label>Token Amount USD</label>
-        <input id="token_amount_usd" type="text" placeholder="$2.90" maxlength="20"/>
-        <span class="field-error" id="err-token_amount_usd"></span>
-      </div>
-      <div class="field" style="grid-column: span 2">
-        <label>Token Change ($)</label>
-        <input id="token_change" type="number" placeholder="0.53 или -1.20" step="any"/>
-        <span class="field-error" id="err-token_change"></span>
+        <label>USD Price per Token</label>
+        <input id="usd_price_per_token" type="number" placeholder="0.0000284" step="any" min="0"/>
+        <span class="field-error" id="err-usd_price_per_token"></span>
       </div>
     </div>
     <div style="margin-top:18px">
@@ -329,8 +338,6 @@
       </div>
     </div>
   </div>
-  </div>
-  </div>
 
   <div class="alert error" id="alertBox"></div>
 
@@ -339,7 +346,6 @@
     <span id="btnLabel">Generate Screenshot</span>
   </button>
 
-  <!-- Status bar (polling) -->
   <div class="status-bar" id="statusBar">
     <div class="status-dot" id="statusDot"></div>
     <div>
@@ -370,15 +376,15 @@
     reader.onload = (ev) => {
       logoDataUri = ev.target.result;
       document.getElementById('logoPreview').innerHTML =
-        `<img src="${logoDataUri}" alt="logo"/>`;
+        `<img src="${ev.target.result}" alt="logo"/>`;
     };
     reader.readAsDataURL(file);
   });
 
   const required = [
-    'domain','name','amount','multiplier',
-    'token_name','token_ticker','token_amount','token_amount_usd',
-    'token_change'
+    'domain', 'name', 'amount', 'multiplier',
+    'usdt_amount',
+    'token_name', 'token_ticker', 'token_amount', 'usd_price_per_token'
   ];
 
   function clearErrors() {
@@ -416,51 +422,35 @@
   }
 
   function stopPolling() {
-    if (pollingTimer) {
-      clearTimeout(pollingTimer);
-      pollingTimer = null;
-    }
+    if (pollingTimer) { clearTimeout(pollingTimer); pollingTimer = null; }
   }
 
   function pollResult(taskId) {
     const INTERVAL_MS  = 1500;
-    const MAX_ATTEMPTS = 40;   // ~60 сек максимум
+    const MAX_ATTEMPTS = 40;
     let attempts = 0;
-
     stopPolling();
 
     async function tick() {
       attempts++;
-
       if (attempts > MAX_ATTEMPTS) {
         setStatus('Timeout: screenshot took too long', 'error', taskId);
         return;
       }
-
       try {
-        const resp = await fetch(
-          `/api/v1/screenshots/result?task_id=${encodeURIComponent(taskId)}`
-        );
-
-        // Явно "ещё не готово"
+        const resp = await fetch(`/api/v1/screenshots/result?task_id=${encodeURIComponent(taskId)}`);
         if (resp.status === 202 || resp.status === 404) {
           setStatus(`Generating... (${attempts})`, 'pending', taskId);
           pollingTimer = setTimeout(tick, INTERVAL_MS);
           return;
         }
-
-        // Ошибка сервера
         if (!resp.ok) {
           const err = await resp.json().catch(() => ({}));
           setStatus(`Error: ${err.detail || resp.statusText}`, 'error', taskId);
           return;
         }
-
-        // 200 — смотрим что внутри
         const contentType = resp.headers.get('content-type') || '';
-
         if (contentType.includes('image')) {
-          // Готово — отдали JPEG сразу
           const blob = await resp.blob();
           const url  = URL.createObjectURL(blob);
           document.getElementById('resultImg').src = url;
@@ -470,26 +460,17 @@
           setStatus('Screenshot ready!', 'done', taskId);
           return;
         }
-
-        // JSON — читаем тело
         const data = await resp.json().catch(() => null);
-
         if (data === null) {
-          // API вернул null — результат ещё не готов
           setStatus(`Generating... (${attempts})`, 'pending', taskId);
           pollingTimer = setTimeout(tick, INTERVAL_MS);
           return;
         }
-
-        // Неожиданный не-null JSON
         setStatus(`Unexpected response: ${JSON.stringify(data)}`, 'error', taskId);
-
       } catch (e) {
         setStatus(`Network error: ${e.message}`, 'error', taskId);
       }
     }
-
-    // Первый тик через INTERVAL_MS
     pollingTimer = setTimeout(tick, INTERVAL_MS);
   }
 
@@ -512,20 +493,19 @@
     if (hasError) return;
 
     const payload = {
-      domain:               get('domain'),
-      name:                 get('name'),
-      amount:               get('amount'),
-      multiplier:           get('multiplier'),
-      token_name:           get('token_name'),
-      token_ticker:         get('token_ticker'),
-      token_amount:         get('token_amount'),
-      token_amount_usd:     get('token_amount_usd'),
-      token_change:         parseFloat(get('token_change')),
-      token_logo:           logoDataUri || null,
+      domain:              get('domain'),
+      name:                get('name'),
+      amount:              get('amount'),
+      multiplier:          get('multiplier'),
+      usdt_amount:         parseFloat(get('usdt_amount')),
+      token_name:          get('token_name'),
+      token_ticker:        get('token_ticker'),
+      token_amount:        parseFloat(get('token_amount')),
+      usd_price_per_token: parseFloat(get('usd_price_per_token')),
+      token_logo:          logoDataUri || null,
     };
 
     setLoading(true);
-
     try {
       const resp = await fetch('/api/v1/screenshots/phantom', {
         method:  'POST',
@@ -552,10 +532,8 @@
         return;
       }
 
-      // { status: "pending", task_id: "uuid..." }
       const data   = await resp.json();
       const taskId = data.task_id;
-
       setStatus('Task created, waiting for result...', 'pending', taskId);
       pollResult(taskId);
 

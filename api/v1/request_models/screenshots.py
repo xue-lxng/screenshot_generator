@@ -7,14 +7,14 @@ from pydantic import BaseModel, field_validator, Field
 class PhantomScreenshot(BaseModel):
     domain: str = Field(..., min_length=1, max_length=100)
     name: str = Field(..., min_length=1, max_length=50)
-    amount: str = Field(..., min_length=1, max_length=20)
+    amount: str = Field(..., min_length=1, max_length=7)
     multiplier: str = Field(..., min_length=1, max_length=20)
 
+    usdt_amount: float
     token_name: str = Field(..., min_length=1, max_length=50)
     token_ticker: str = Field(..., min_length=1, max_length=20)
-    token_amount: str = Field(..., min_length=1, max_length=30)
-    token_amount_usd: str = Field(..., min_length=1, max_length=20)
-    token_change: float
+    token_amount: float
+    usd_price_per_token: float
     token_logo: str | None = None
 
     @field_validator("token_logo")
